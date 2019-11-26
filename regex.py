@@ -26,7 +26,7 @@ class Expression(object):
 		return startable
 
 	def parseSubExpressions(subexp):
-		if isAlpha(subexp[0]) && isAlpha(subexp[1]):
+		if isAlpha(subexp[0]) and isAlpha(subexp[1]):
 			singletonTable = {}
 			singletonTable[(1, subexp[0])] = 0
 			#self.subExpressions.append(singletonTable)
