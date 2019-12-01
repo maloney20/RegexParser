@@ -2,8 +2,6 @@ import sys
 import os
 import string
 
-state_table = {}
-
 
 class Node(object):
     def __init__(self, state_num, is_accept):
@@ -13,15 +11,18 @@ class Node(object):
         # self.incoming = []
 
 class Edge(object):
-    def __init__(self, orig, dest, phrase):
-        self.orig = orig
-        self.dest = dest
+    def __init__(self, origin, destin, phrase):
+        self.orig = origin
+        self.dest = destin
         self.phrase = phrase
 
 def create_dfa_from_regex(regex):
+
     states = []
     transitions = []
     
+    pren_state_stack = []
+
     inital_state = Node(0, True)
     states.append(inital_state)
 
@@ -45,14 +46,29 @@ def create_dfa_from_regex(regex):
                 states.append(new_state)
                 transitions.append(new_transition)
             elif curr_char == "*":
-                #makes a transition from the current node to itself
+                # makes a transition from the current node to itself
                 new_transition = Edge(curr_state.state_num,curr_state.state_num,regex[i-1])
-                
+                transitions.append(new_transition)
             elif curr_char == "|":
-                asldfkjhas = 0 # dummy code, gotta handle that stuff later
-            # elif curr_char == "("
+                asdf=0
+                #TODO: Complete this
+                # add a second edge from the current node to the destination node
+            elif curr_char == "(":
+                asdf=0
+                #TODO: Complete this
+                # Put the current state on a stack. 
+                # Make a new dfa out of the elements after the pushed state,
+                #  and then concat this sub-dfa to the larger one once the second 
+                #  ending paren is noticed. 
+                pren_state_stack.append(curr_state)
+            elif curr_char == ")":
+                asdf=0
+                # TODO: Complete this, see previous elif case
 
-            # elif curr_char == ")" 
+            else:
+                print("Unrecognized character entered. Valid characters are the following:\n \
+                    \"|\" , \"*\", \"(\", \")\", and all letters [a-z] in lowercase.")
+                return None 
 
 
     
