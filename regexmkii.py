@@ -71,7 +71,14 @@ def create_dfa_from_regex(regex):
                 return None 
 
 
-    
+def run_string_through_nfa(string, nfa):
+    asdfasdf=0
+    # dfa will be a tuple of ([states], [transitions])
+    for letter in string:
+        asdfasdf=0
+        # step through the nfa with the word.
+        # if there is a nondeterministic split, 
+        #  run both paths and if one accepts, then return true, else false
 
 
 '''
