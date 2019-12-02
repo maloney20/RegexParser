@@ -29,11 +29,13 @@ class Expression:
 		self.exp = exp
 		self.accept = []
 		self.buildNFA()
+		self.showNfa(self.start, [])
 
 	def showNfa(self, state, shownStates):
 		print(state.num)
 		for t in state.out:
 			print(t[0], t[1].num, t[1].accept)
+		print()
 		shownStates.append(state.num)
 		for t in state.out:
 			if t[1].num not in shownStates:
@@ -106,24 +108,39 @@ class Expression:
 		self.start = fragments[0].start
 		return Fragment(fragments[0].start, endStates)
 
-
+	def getEpsilonReachable(self, states):
+		if len(states) == 0:
+			return []
+		reachable = []
+		for state in states:
+			for out in state.out:
+				if out[0] == "":
+					reachable.append(out[1])
+		return reachable + self.getEpsilonReachable(reachable)
 
 	#simulate s on the nfa
 	def match(self, s):
-		#.showNfa(self.start, [])
+		
 		possibleStates = [self.start]
-		for transition in self.start.out:
-			if transition[0] == "":
-				possibleStates.append(transition[1])
+		
 		for ch in s:
-			possibleCopy = possibleStates.copy()
+			newPossible = []
+			#print("at", ch)
+			epsilonReachable = self.getEpsilonReachable(possibleStates.copy())
+			#print("reachable", list(map(lambda x: x.num, epsilonReachable)))
+			possibleStates = possibleStates+epsilonReachable
+			#print("possible", list(map(lambda x: x.num, possibleStates)))
 			for state in possibleStates:
 				for out in state.out:
-
-					if out[0] == ch or out[0] == "":
-						possibleCopy.append(out[1])
-				possibleCopy.remove(state)
-			possibleStates = possibleCopy
+					#print("checking", out)
+					if out[0] == ch:
+						#print("adding", out[1].num, "to possible")
+						newPossible.append(out[1])
+						#print(list(map(lambda x: x.num, newPossible)))
+			possibleStates = newPossible
+			#print("after", ch, list(map(lambda x: x.num, possibleStates)))
+		#print("string consumed. Possible:", list(map(lambda x: x.num, possibleStates)))
+		possibleStates = possibleStates + self.getEpsilonReachable(possibleStates.copy())
 		for state in possibleStates:
 			if state.accept:
 				return True
@@ -131,11 +148,12 @@ class Expression:
 
 
 def main():
-	exp = Expression("a|b")
+	exp = Expression("a*b")
 	print("-------------------------------------")
-	print(str(exp.match("a")))
+	print(str(exp.match("ab")))
+	print(str(exp.match("aaab")))
 	print(str(exp.match("b")))
-	print(str(exp.match("c")))
+	print(str(exp.match("aba")))
 
 main()
 
