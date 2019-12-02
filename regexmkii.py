@@ -2,6 +2,7 @@ import sys
 import os
 import string
 
+state_tracker = 0
 
 class Node(object):
     def __init__(self, state_num, is_accept):
@@ -17,7 +18,7 @@ class Edge(object):
         self.phrase = phrase
 
 def create_dfa_from_regex(regex):
-
+    global state_tracker
     states = []
     transitions = []
     
@@ -26,18 +27,17 @@ def create_dfa_from_regex(regex):
     inital_state = Node(0, True)
     states.append(inital_state)
 
-
     if regex == "": # returns a single accepting node in case the regex is the empty string
         single_edge = Edge(0, 0, "")
         transitions.append(single_edge)
         return (states, transitions)
-
     else:
         states[0].is_accept = False
-
         for i in range(0, len(regex)):
-            curr_state = states[len(states)-1] # keeps us at the current state to append transitions to
+            # curr_state = states[len(states)-1] # keeps us at the current state to append transitions to
+            curr_state = states[state_tracker] # keeps us at the current state to append transitions to
             curr_char = regex[i]
+
             if curr_char.isAlpha():
                 #makes a new node and then a transition from the previous node to this node,
                 #  with the current character as the transiton element
@@ -45,25 +45,34 @@ def create_dfa_from_regex(regex):
                 new_transition = Edge(curr_state.state_num,new_state.state_num,curr_char)
                 states.append(new_state)
                 transitions.append(new_transition)
+                state_tracker += 1
+
             elif curr_char == "*":
                 # makes a transition from the current node to itself
                 new_transition = Edge(curr_state.state_num,curr_state.state_num,regex[i-1])
                 transitions.append(new_transition)
+
             elif curr_char == "|":
                 asdf=0
-                #TODO: Complete this
-                # add a second edge from the current node to the destination node
+                #TODO: COMPLETE THIS *****
+                # add a second edge from the current node to the destination node with the next letter
+                # I feel like we don't need to do anything here besides not increment the state counter
+
             elif curr_char == "(":
                 asdf=0
-                #TODO: Complete this
+                new_sub_dfa = create_dfa_from_regex()
+                trans_to_new_sub_nfa = Edge(curr_state.state_num,)
+                #TODO: COMPLETE THIS *****
                 # Put the current state on a stack. 
                 # Make a new dfa out of the elements after the pushed state,
                 #  and then concat this sub-dfa to the larger one once the second 
                 #  ending paren is noticed. 
                 pren_state_stack.append(curr_state)
+
             elif curr_char == ")":
                 asdf=0
-                # TODO: Complete this, see previous elif case
+                # TODO: COMPLETE THIS *****
+                #  see previous elif case
 
             else:
                 print("Unrecognized character entered. Valid characters are the following:\n \
