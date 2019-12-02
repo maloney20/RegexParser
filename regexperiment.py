@@ -33,8 +33,8 @@ class Expression:
 		for i in range(len(self.exp)):
 			ch = self.exp[i]
 			if isAlpha(ch):
-				s = state(False)
-				e = state(True)
+				s = State(False)
+				e = State(True)
 				s.out.append((ch, e))
 				fragments.append(Fragment(s, e))
 			elif ch == "*":
@@ -59,7 +59,7 @@ class Expression:
 			for state in possiblestates:
 				for out in state.out:
 					if out[1] == ch:
-						
+
 
 
 
