@@ -26,9 +26,9 @@ class Fragment:
 	def getAcceptStates(self):
 		return self.findAccept(self.start, [], [])
 
+	#return all accept states into 'accepts' list
 	def findAccept(self, state, accepts, visited):
 		visited.append(state)
-		#print("l")
 		if state.accept and state not in accepts:
 			accepts.append(state)
 		if len(state.out) > 0:
@@ -57,9 +57,18 @@ class Expression:
 			if t[1].num not in shownStates:
 				self.showNfa(t[1], shownStates)
 		
-
+	#debug function to print state nums in list
 	def printStateList(self, states):
 		print(list(map(lambda x: x.num, states)))
+
+	def stateListEquals(self, l1, l2):
+		if len(l1) != len(l2):
+			return False
+		else:
+			for i in range(len(l1)):
+				if l1[i].num != l2[i].num:
+					return False
+		return True
 
 	def print(self):
 		print("NFA")
@@ -76,21 +85,16 @@ class Expression:
 				s = State(statenum, False)
 				e = State(statenum, True)
 				s.out.append((ch, e))
-				#e.out.append(("", "next"))
 				frag = Fragment(s, [e])
 				frag.connectors.append(e)
 
 				fragments.append(frag)
 			elif ch == "*":
-				print("applying star")
 				f = fragments.pop()
 				s = State(statenum, True)
 				frag = Fragment(s, [s])
 				s.out.append(("", f.start))
-				#s.out.append(("", "next"))
 				frag.connectors.append(s)
-				print("end states for star")
-				self.printStateList(f.end)
 				for end in f.end:
 					end.accept = False
 					end.out.append(("", s))
@@ -119,14 +123,9 @@ class Expression:
 						closeIndex = j
 						break
 				parenExp = Expression(self.exp[i+1:closeIndex-1]).buildNFA()
-				self.printStateList(parenExp.end)
 				fragments.append(parenExp)
 				i = closeIndex-1
 			i+=1
-			# for i in range(len(fragments)):
-			# 	print("fragments[", i, "]:")
-				
-			# 	print("conn", list(map(lambda x: x.num, fragments[i].connectors)))
 
 
 		#put all fragments together
@@ -143,7 +142,6 @@ class Expression:
 		endStates = list(dict.fromkeys(endStates))
 		rtn = Fragment(fragments[0].start, endStates)
 		rtn.connectors = endStates
-		#self.showNfa(rtn.start, [])
 		return rtn
 
 	def getEpsilonReachable(self, states):
@@ -163,21 +161,13 @@ class Expression:
 		
 		for ch in s:
 			newPossible = []
-			#print("at", ch)
 			epsilonReachable = self.getEpsilonReachable(possibleStates.copy())
-			#print("reachable", list(map(lambda x: x.num, epsilonReachable)))
-			possibleStates = possibleStates+epsilonReachable
-			#print("possible", list(map(lambda x: x.num, possibleStates)))
+			possibleStates += epsilonReachable
 			for state in possibleStates:
 				for out in state.out:
-					#print("checking", out)
 					if out[0] == ch:
-						#print("adding", out[1].num, "to possible")
 						newPossible.append(out[1])
-						#print(list(map(lambda x: x.num, newPossible)))
 			possibleStates = newPossible
-			#print("after", ch, list(map(lambda x: x.num, possibleStates)))
-		#print("string consumed. Possible:", list(map(lambda x: x.num, possibleStates)))
 		possibleStates = possibleStates + self.getEpsilonReachable(possibleStates.copy())
 		for state in possibleStates:
 			if state.accept:
@@ -186,12 +176,6 @@ class Expression:
 
 
 def main():
-	# exp = Expression("(ab)*")
-	# print("-------------------------------------")
-	# print(str(exp.match("ab")))
-	# print(str(exp.match("abab")))
-	# print(str(exp.match("")))
-	# print(str(exp.match("aba")))
 	print("Enter regular expression:", end=" ")
 	exp = Expression(input())
 	
