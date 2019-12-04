@@ -176,18 +176,28 @@ class Expression:
 
 
 def main():
-	print("Enter regular expression:", end=" ")
-	exp = Expression(input())
-	
-	exp.print()
-	print("Now enter some strings (or \'quit\' to quit)")
-	inp = ""
-	while True:
-		print(">", end=" ")
-		inp = input()
-		if inp == "quit":
-			break
-		print(str(exp.match(inp)))
+	if len(sys.argv) < 2:
+		print("Enter regular expression:", end=" ")
+		exp = Expression(input())
+		exp.print()
+		print("Now enter some strings (or \'quit\' to quit)")
+		inp = ""
+		while True:
+			print(">", end=" ")
+			inp = input()
+			if inp == "quit":
+				break
+			print(str(exp.match(inp)))
+	else:
+		with open(sys.argv[1]) as fp:
+			lines = fp.readlines()
+			lines = list(map(lambda x: x[:-1], lines))
+			exp = Expression(lines[0])
+			exp.print()
+			lines.remove(lines[0])
+			for line in lines:
+				print(str(exp.match(line)))
+
 
 
 main()
