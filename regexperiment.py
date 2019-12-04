@@ -23,31 +23,58 @@ class Fragment:
 		self.end = end
 		self.connectors = []
 
+	def getAcceptStates(self):
+		return self.findAccept(self.start, [], [])
+
+	def findAccept(self, state, accepts, visited):
+		visited.append(state)
+		#print("l")
+		if state.accept and state not in accepts:
+			accepts.append(state)
+		if len(state.out) > 0:
+			for o in state.out:
+				if not o[1] in visited:
+					accepts = accepts + self.findAccept(o[1], accepts, visited)
+		return accepts
+
 
 class Expression:
 	def __init__(self, exp):
 		self.exp = exp
-		self.accept = []
+		self.accept = False
 		self.buildNFA()
-		self.showNfa(self.start, [])
+		#self.showNfa(self.start, [])
+		
 
 	def showNfa(self, state, shownStates):
+		
 		print(state.num)
 		for t in state.out:
-			print(t[0], t[1].num, t[1].accept)
+			print("\'"+t[0]+"\'", t[1].num, "accept" if t[1].accept else "")
 		print()
 		shownStates.append(state.num)
 		for t in state.out:
 			if t[1].num not in shownStates:
 				self.showNfa(t[1], shownStates)
+		
+
+	def printStateList(self, states):
+		print(list(map(lambda x: x.num, states)))
+
+	def print(self):
+		print("NFA")
+		print("---------------")
+		self.showNfa(self.start, [])
+		print("---------------")
 
 	def buildNFA(self):
 		fragments = []
-		for i in range(len(self.exp)):
+		i=0
+		while i < len(self.exp):
 			ch = self.exp[i]
 			if isAlpha(ch):
 				s = State(statenum, False)
-				e = State(statenum, False)
+				e = State(statenum, True)
 				s.out.append((ch, e))
 				#e.out.append(("", "next"))
 				frag = Fragment(s, [e])
@@ -55,13 +82,15 @@ class Expression:
 
 				fragments.append(frag)
 			elif ch == "*":
+				print("applying star")
 				f = fragments.pop()
-				s = State(statenum, False)
+				s = State(statenum, True)
 				frag = Fragment(s, [s])
 				s.out.append(("", f.start))
 				#s.out.append(("", "next"))
 				frag.connectors.append(s)
-
+				print("end states for star")
+				self.printStateList(f.end)
 				for end in f.end:
 					end.accept = False
 					end.out.append(("", s))
@@ -90,23 +119,32 @@ class Expression:
 						closeIndex = j
 						break
 				parenExp = Expression(self.exp[i+1:closeIndex-1]).buildNFA()
+				self.printStateList(parenExp.end)
 				fragments.append(parenExp)
+				i = closeIndex-1
+			i+=1
+			# for i in range(len(fragments)):
+			# 	print("fragments[", i, "]:")
+				
+			# 	print("conn", list(map(lambda x: x.num, fragments[i].connectors)))
+
 
 		#put all fragments together
-		endStates = []
 		for i in range(len(fragments)):
 			if i == len(fragments)-1:
-				endStates = fragments[i].end
-				for end in endStates:
-					#print(end.num, "accepts")
-					end.accept = True
 				break
 			frag = fragments[i]
 			for con in frag.connectors:
+				con.accept=False
 				con.out.append(("", fragments[i+1].start))
 
 		self.start = fragments[0].start
-		return Fragment(fragments[0].start, endStates)
+		endStates = fragments[0].getAcceptStates()
+		endStates = list(dict.fromkeys(endStates))
+		rtn = Fragment(fragments[0].start, endStates)
+		rtn.connectors = endStates
+		#self.showNfa(rtn.start, [])
+		return rtn
 
 	def getEpsilonReachable(self, states):
 		if len(states) == 0:
@@ -143,17 +181,30 @@ class Expression:
 		possibleStates = possibleStates + self.getEpsilonReachable(possibleStates.copy())
 		for state in possibleStates:
 			if state.accept:
-				return True
-		return False
+				return "Accepted!"
+		return "Rejcted."
 
 
 def main():
-	exp = Expression("a*b")
-	print("-------------------------------------")
-	print(str(exp.match("ab")))
-	print(str(exp.match("aaab")))
-	print(str(exp.match("b")))
-	print(str(exp.match("aba")))
+	# exp = Expression("(ab)*")
+	# print("-------------------------------------")
+	# print(str(exp.match("ab")))
+	# print(str(exp.match("abab")))
+	# print(str(exp.match("")))
+	# print(str(exp.match("aba")))
+	print("Enter regular expression:", end=" ")
+	exp = Expression(input())
+	
+	exp.print()
+	print("Now enter some strings (or \'quit\' to quit)")
+	inp = ""
+	while True:
+		print(">", end=" ")
+		inp = input()
+		if inp == "quit":
+			break
+		print(str(exp.match(inp)))
+
 
 main()
 
